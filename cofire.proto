@@ -33,8 +33,8 @@ message Message {
 // Update messages overwrite the U or P features of in the user/product's
 // entry.
 message Update {
-  Features u = 2;
-  Features p = 3;
+  Features u = 1;
+  Features p = 2;
 }
 
 // Stage are the internal stages of the cofire learner.

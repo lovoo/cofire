@@ -2,8 +2,6 @@ package cofire
 
 import (
 	"testing"
-
-	"github.com/facebookgo/ensure"
 )
 
 // make features
@@ -20,5 +18,7 @@ func TestDot(t *testing.T) {
 	product := makeFeatures([]float64{3.0, 2.0, 1.0})
 
 	score := user.dot(product)
-	ensure.DeepEqual(t, score, 10.0)
+	if score != 10.0 {
+		t.Errorf("score: %f, expected: 10.0", score)
+	}
 }

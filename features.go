@@ -4,6 +4,7 @@ import (
 	"math/rand"
 )
 
+// NewFeatures creates a feature vector with rank features.
 func NewFeatures(rank int) *Features {
 	return &Features{
 		V: make([]float64, rank),
@@ -23,19 +24,6 @@ func (f *Features) Randomize() *Features {
 		f.V[i] = rand.Float64()
 	}
 	return f
-}
-
-// zeros return true if features are all 0.
-func (f *Features) zeros() bool {
-	if f == nil {
-		return true
-	}
-	for _, v := range f.V {
-		if v != 0.0 {
-			return false
-		}
-	}
-	return true
 }
 
 // predict predicts a r^ for a given user and a product

@@ -2,8 +2,6 @@ package cofire
 
 import (
 	"testing"
-
-	"github.com/facebookgo/ensure"
 )
 
 func TestGradientDescent(t *testing.T) {
@@ -19,5 +17,7 @@ func TestGradientDescent(t *testing.T) {
 	sgd.Apply(cuser, product, 1)
 	b := cuser.dot(product)
 
-	ensure.True(t, a < b)
+	if a >= b {
+		t.Errorf("a >= b (%f >= %f)", a, b)
+	}
 }

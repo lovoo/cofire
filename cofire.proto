@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+package cofire;
+
+// Features are the factors and a bias for a user or product.
+message Features {
+  repeated double v = 1;
+  double bias       = 2;
+}
+
+// Entry are the factors (either U or P) for a user or product.
+message Entry {
+  Features u = 1;
+  Features p = 2;
+}
+
+// Rating represents the score that a user gives to a product.
+// Cofire Learner accepts Rating messages to factorize the rating matrix.
+message Rating {
+  string user_id    = 1;
+  string product_id = 2;
+  double score      = 3;
+}
+
+// Message are internal messages of the Cofire Learner.
+message Message {
+  Stage    stage  = 1;
+  Rating   rating = 2;
+  Features f      = 3;
+  uint32   iters  = 4;
+}
+
+// Update messages overwrite the U or P features of in the user/product's
+// entry.
+message Update {
+  Features u = 2;
+  Features p = 3;
+}
+
+// Stage are the internal stages of the cofire learner.
+enum Stage {
+  ENTRY   = 0;
+  PRODUCT = 1;
+  USER    = 2;
+}

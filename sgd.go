@@ -4,8 +4,13 @@ import "sync"
 
 // SGD is a helper to apply stochastic gradient descent.
 type SGD struct {
-	Gamma  float64
+	// Gamma constant for learning speed
+	Gamma float64
+
+	// Lambda constant for regularization
 	Lambda float64
+
+	// average bias calculated in runtime
 	bias   float64
 	bsum   float64
 	bcount int

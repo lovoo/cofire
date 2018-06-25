@@ -19,9 +19,7 @@ func NewLearner(group goka.Group, validator Validator, params Parameters) *goka.
 		goka.Input(goka.Stream(update), new(UpdateCodec), p.update),
 		goka.Loop(new(messageCodec), p.stages(goka.Stream(refeed))),
 		goka.Persist(new(EntryCodec)),
-	}
-	if params.Iterations > 1 {
-		edges = append(edges, goka.Output(goka.Stream(refeed), new(messageCodec)))
+		goka.Output(goka.Stream(refeed), new(messageCodec)),
 	}
 	return goka.DefineGroup(group, edges...)
 }

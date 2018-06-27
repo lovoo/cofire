@@ -10,7 +10,8 @@ import (
 	"github.com/lovoo/goka"
 )
 
-// starts a learner processor
+// StartLearner starts a Cofire processor that factorizes a rating matrix with
+// SGD. A simple validator prints to stdout the RMSE every second.
 func StartLearner(ctx context.Context, brokers []string, group goka.Group, params cofire.Parameters) func() error {
 	return func() error {
 		// validator prints the RMSE every couple of seconds
@@ -39,19 +40,8 @@ func StartLearner(ctx context.Context, brokers []string, group goka.Group, param
 	}
 }
 
-// start a refeeder processor
-func StartRefeeder(ctx context.Context, brokers []string, group goka.Group, delay time.Duration) func() error {
-	return func() error {
-		gg := cofire.NewRefeeder(group, delay)
-		p, err := goka.NewProcessor(brokers, gg)
-		if err != nil {
-			return err
-		}
-		return p.Run(ctx)
-	}
-}
-
-// start a producer of ratings
+// StartProducer starts a producer that emits a slice of ratings into the input
+// of the learner, one rating every 5 milliseconds.
 func StartProducer(ctx context.Context, brokers []string, group goka.Group, ratings []cofire.Rating) func() error {
 	return func() error {
 		emitter, err := goka.NewEmitter(brokers,
@@ -78,7 +68,22 @@ func StartProducer(ctx context.Context, brokers []string, group goka.Group, rati
 	}
 }
 
-// create a view of the model
+// StartRefeeder starts a Cofire refeeder processor, ie, a process that refeeds
+// the stream into the learner's input after a delay. This can be used to
+// train for multiple iterations.
+func StartRefeeder(ctx context.Context, brokers []string, group goka.Group, delay time.Duration) func() error {
+	return func() error {
+		gg := cofire.NewRefeeder(group, delay)
+		p, err := goka.NewProcessor(brokers, gg)
+		if err != nil {
+			return err
+		}
+		return p.Run(ctx)
+	}
+}
+
+// CreateView creates a view of the cofire table and a function to start it if
+// no error occurred.
 func CreateView(brokers []string, group goka.Group) (*goka.View, func(ctx context.Context) func() error) {
 	view, err := goka.NewView(brokers, goka.GroupTable(group), new(cofire.EntryCodec))
 	return view, func(ctx context.Context) func() error {
@@ -91,7 +96,9 @@ func CreateView(brokers []string, group goka.Group) (*goka.View, func(ctx contex
 	}
 }
 
-// start validator
+// StartValidator starts a go routine that loops over all given ratings and
+// calculates the RSME calculating the ratings with the error predicted from
+// the model.
 func StartValidator(ctx context.Context, view *goka.View, ratings []cofire.Rating, params cofire.Parameters) func() error {
 	return func() error {
 		for {

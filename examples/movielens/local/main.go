@@ -3,13 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
-	"log"
-	"math/rand"
-	"strconv"
-	"strings"
 
 	"github.com/lovoo/cofire"
+	"github.com/lovoo/cofire/examples/movielens"
 )
 
 var (
@@ -25,43 +21,11 @@ func init() {
 	flag.Parse()
 }
 
-// read ratings from file, and drop
-func readRatings(fname string) []cofire.Rating {
-	dat, err := ioutil.ReadFile(fname)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	var ratings []cofire.Rating
-	for _, l := range strings.Split(string(dat), "\n") {
-		if l == "" {
-			continue
-		}
-		e := strings.Split(l, ",")
-		if len(e) != 4 {
-			log.Print(l)
-			log.Fatal("!= 4")
-		}
-
-		s, _ := strconv.ParseFloat(e[2], 64)
-		ratings = append(ratings, cofire.Rating{
-			UserId:    e[0],
-			ProductId: e[1],
-			Score:     s,
-		})
-	}
-
-	rand.Shuffle(len(ratings), func(i, j int) {
-		ratings[i], ratings[j] = ratings[j], ratings[i]
-	})
-	return ratings
-}
-
 func main() {
 	var (
 		model      = make(map[string]*cofire.Entry)
 		sgd        = cofire.NewSGD(*gamma, *lambda)
-		ratings    = readRatings(*input)
+		ratings    = movielens.ReadRatings(*input)
 		train      = ratings[:len(ratings)**sample/100]
 		test       = ratings[len(ratings)**sample/100:]
 		trainError = cofire.NewErrorValidator()

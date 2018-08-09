@@ -63,3 +63,11 @@ func (f *Features) add(v []float64) {
 func (f *Features) Predict(o *Features, bias float64) float64 {
 	return bias + f.Bias + o.Bias + f.dot(o)
 }
+
+// Rank returns the number of features in the vector.
+func (f *Features) Rank() int {
+	if f == nil {
+		return 0
+	}
+	return len(f.V)
+}

@@ -94,12 +94,14 @@ message Entry {
 }
 ```
 
-When `user_id` receives a rating via the input topic, it retrieves the U features and sends (rating,U) to the `product_id` via the `<group>-loop` topic.
-When `product_id` receives (rating,U), it retrieves the P features, applies SGD, and sends (rating,P) back to `user_id`.
-When `user_id` receives (rating,P), it retrieves the U features, applies SGD, and sends the rating to the refeeder via `<group>-refeed`.
+The algorithm for one rating has 3 steps:
+1. When `user_id` receives a rating via the input topic, it retrieves the U features and sends (rating,U) to the `product_id` via the `<group>-loop` topic.
+2. When `product_id` receives (rating,U), it retrieves the P features, applies SGD, and sends (rating,P) back to `user_id`.
+3. When `user_id` receives (rating,P), it retrieves the U features, applies SGD, and sends the rating to the refeeder via `<group>-refeed`.
+
 With that the iteration for this rating is finished.
 
-In ASCII-art, it would look like this
+In ASCII-art, one iteration would look like this
 ```
     Rating
       |
@@ -120,13 +122,59 @@ In ASCII-art, it would look like this
    REFEEDER
 ```
 
-
 ### Iterating
 
 If the algorithm is configured to run multiple iterations, the refeeder sends the rating back to the `user_id` to retrain the rating.
 That happens for the configured number of iterations.
 Since the stream never ends, the refeeder creates iterations by delaying the `<group>-refeed` topic by a configurable duration.
 Note that the retention time configured for the topic has to be longer than the delay duration of the refeeder, otherwise ratings will be lost.
+
+
+In ASCII-art, the complete flow is as follows.
+Here we see the three components: producer, learner and refeeder.
+The **producer** sends a rating to the **learner**.
+The *user* key receives the rating and sends the rating plus its U vector to the *product* key in the learner (by using Goka's loopback).
+The product updates P, sends it back to the user, which updates U and sends the rating to the **refeeder**.
+The refeeder sends the rating back to the learner/user-key after a delay, and the number of remaining iterations is decremented.
+The *user* receives the rating and the next iteration starts.
+
+```
+    PRODUCER             ,..LEARNER..,               REFEEDER
+      |             USER'             'PRODUCT          .
+      |   Rating     .                   .              .
+      +------------->+                   .              .
+      .              |                   .              .
+      .              |                   .              .
+      .              * Entry             .              .
+      .              |                   .              .
+      .              |    (Rating, U)    .              .
+      .              +------------------>+              .
+      .              .                   |              .
+      .              .                   |              .
+      .              .                   * Update P     .
+      .              .                   |              .
+      .              .    (Rating, P)    |              .
+      .              +<------------------+              .
+      .              |                   .              .
+      .              |                   .              .
+      .              * Update U          .              .
+      .              |                   .              .
+      .              |      (Rating, #iterations)       .
+      .              +--------------------------------->+
+      .              .                   .              |
+      .              .                   .              |
+      .              .                   .              * Delay
+      .              .                   .              |
+      .              .      (Rating, #iterations--)     |
+      .              +<---------------------------------+
+      .              |                   .              .
+      .              |                   .              .
+      .              * Entry             .              .
+      .              |                   .              .
+      .              |   next iteration  .              .
+      .              +------------------>+              .
+```
+
 
 ### Predicting
 

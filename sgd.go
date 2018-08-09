@@ -64,13 +64,5 @@ func (s *SGD) ApplyError(f, o *Features, e float64) {
 func (s *SGD) Apply(f, o *Features, score float64) {
 	s.Add(score)
 	e := s.Error(f, o, score)
-	update := o.mult(e * s.Gamma)
-	regularization := f.mult(-s.Lambda * s.Gamma)
-
-	// update features
-	f.add(update)
-	f.add(regularization)
-
-	// update bias
-	f.Bias += s.Gamma * (e - s.Lambda*f.Bias)
+	s.Apply(f, o, e)
 }

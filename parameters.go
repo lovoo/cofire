@@ -8,7 +8,7 @@ type Parameters struct {
 	Gamma float64
 	// Lambda is the regularization parameter.
 	Lambda float64
-	// Iterations is the number of times the data will trained.
+	// Iterations is the number of times the data will be used for training.
 	Iterations int
 }
 

@@ -48,7 +48,7 @@ func (l *Learner) entry(ctx goka.Context, m interface{}) {
 	msg := m.(*Rating)
 	e := getEntry(ctx)
 
-	if e.U == nil {
+	if e.U.Rank() != l.params.Rank {
 		e.U = NewFeatures(l.params.Rank).Randomize()
 		setEntry(ctx, e)
 	}
@@ -81,9 +81,8 @@ func (l *Learner) stages(refeed goka.Stream) goka.ProcessCallback {
 		e := getEntry(ctx)
 
 		switch msg.Stage {
-		case Stage_ENTRY:
-			// send U to product
-			if e.U == nil {
+		case Stage_ENTRY: // send U to product
+			if e.U.Rank() != l.params.Rank {
 				e.U = NewFeatures(l.params.Rank).Randomize()
 				setEntry(ctx, e)
 			}
@@ -91,12 +90,16 @@ func (l *Learner) stages(refeed goka.Stream) goka.ProcessCallback {
 			msg.F = e.U
 			ctx.Loopback(msg.Rating.ProductId, msg)
 
-		case Stage_PRODUCT:
-			// validate prediction
-			if e.P == nil {
+		case Stage_PRODUCT: // validate, learn P and send P to user
+			if e.P.Rank() != l.params.Rank {
 				e.P = NewFeatures(l.params.Rank).Randomize()
 			}
-			l.v.Validate(e.P.Predict(msg.F, l.sgd.Bias()), msg.Rating.Score)
+
+			// validate prediction before learning it
+			if msg.Iters == uint32(l.params.Iterations) {
+				// only validate in the first iteration
+				l.v.Validate(e.P.Predict(msg.F, l.sgd.Bias()), msg.Rating.Score)
+			}
 
 			// update P
 			l.sgd.Apply(e.P, msg.F, msg.Rating.Score)
@@ -107,11 +110,12 @@ func (l *Learner) stages(refeed goka.Stream) goka.ProcessCallback {
 			msg.F = e.P
 			ctx.Loopback(msg.Rating.UserId, msg)
 
-		case Stage_USER:
-			// update U
-			if e.U == nil { // should never happen
+		case Stage_USER: // learn U and send rating to refeeder
+			if e.U.Rank() != l.params.Rank {
 				e.U = NewFeatures(l.params.Rank).Randomize()
 			}
+
+			// update U
 			l.sgd.Apply(e.U, msg.F, msg.Rating.Score)
 			setEntry(ctx, e)
 

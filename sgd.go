@@ -10,6 +10,10 @@ type SGD struct {
 	// Lambda constant for regularization
 	Lambda float64
 
+	// Clip defines the maximum absolute error to be applied.
+	// If 0 the error is not limited. Default is 0.
+	Clip float64
+
 	// average bias calculated in runtime
 	bias   float64
 	bsum   float64
@@ -64,5 +68,11 @@ func (s *SGD) ApplyError(f, o *Features, e float64) {
 func (s *SGD) Apply(f, o *Features, score float64) {
 	s.Add(score)
 	e := s.Error(f, o, score)
+	switch {
+	case s.Clip > 0 && e > s.Clip:
+		e = s.Clip
+	case s.Clip > 0 && e < -s.Clip:
+		e = -s.Clip
+	}
 	s.ApplyError(f, o, e)
 }

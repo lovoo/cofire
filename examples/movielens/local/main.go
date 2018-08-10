@@ -24,7 +24,8 @@ func init() {
 func main() {
 	var (
 		model      = make(map[string]*cofire.Entry)
-		sgd        = cofire.NewSGD(*gamma, *lambda)
+		params     = cofire.Parameters{Gamma: *gamma, Lambda: *lambda}
+		sgd        = cofire.NewSGD(params)
 		ratings    = movielens.ReadRatings(*input)
 		train      = ratings[:len(ratings)**sample/100]
 		test       = ratings[len(ratings)**sample/100:]

@@ -39,7 +39,7 @@ func newLearner(group string, validator Validator, params Parameters) *Learner {
 		group:  group,
 		params: params,
 		v:      validator,
-		sgd:    NewSGD(params.Gamma, params.Lambda),
+		sgd:    NewSGD(params),
 	}
 }
 

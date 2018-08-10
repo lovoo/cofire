@@ -4,15 +4,7 @@ import "sync"
 
 // SGD is a helper to apply stochastic gradient descent.
 type SGD struct {
-	// Gamma constant for learning speed
-	Gamma float64
-
-	// Lambda constant for regularization
-	Lambda float64
-
-	// Clip defines the maximum absolute error to be applied.
-	// If 0 the error is not limited. Default is 0.
-	Clip float64
+	Parameters
 
 	// average bias calculated in runtime
 	bias   float64
@@ -22,8 +14,8 @@ type SGD struct {
 }
 
 // NewSGD returns a configured SGD helper.
-func NewSGD(gamma, lambda float64) *SGD {
-	return &SGD{Gamma: gamma, Lambda: lambda}
+func NewSGD(params Parameters) *SGD {
+	return &SGD{Parameters: params}
 }
 
 // Add adds bias to the prediction error. If Add is called multiple times, the average bias

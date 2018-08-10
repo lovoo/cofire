@@ -56,7 +56,7 @@ func startPicValidator(ctx context.Context, view *goka.View, ratings []cofire.Ra
 				output = createImage()
 				u      *cofire.Features
 				p      *cofire.Features
-				sgd    = cofire.NewSGD(params.Gamma, params.Lambda)
+				sgd    = cofire.NewSGD(params)
 				//g      = &gif.GIF{}
 			)
 
@@ -112,13 +112,13 @@ func startPicValidator(ctx context.Context, view *goka.View, ratings []cofire.Ra
 
 func main() {
 	var (
-		brokers = []string{*broker}
-		ggroup  = goka.Group(*group)
-		ratings = pixelreco.ReadRatings(*input)
-		ctx     = context.Background()
-		train   = ratings[:len(ratings)**sample/100]
-		test    = ratings[len(ratings)**sample/100:]
-		params  = cofire.Parameters{
+		brokers    = []string{*broker}
+		ggroup     = goka.Group(*group)
+		ratings, _ = pixelreco.ReadRatings(*input)
+		ctx        = context.Background()
+		train      = ratings[:len(ratings)**sample/100]
+		test       = ratings[len(ratings)**sample/100:]
+		params     = cofire.Parameters{
 			Gamma:      *gamma,
 			Lambda:     *lambda,
 			Rank:       *rank,

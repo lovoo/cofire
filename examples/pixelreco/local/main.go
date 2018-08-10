@@ -42,7 +42,7 @@ func main() {
 		}
 		trainError = cofire.NewErrorValidator()
 		testError  = cofire.NewErrorValidator()
-		sgd        = cofire.NewSGD(params.Gamma, params.Lambda)
+		sgd        = cofire.NewSGD(params)
 		model      = make(map[string]*cofire.Entry)
 		animated   = &gif.GIF{}
 		k          = 0

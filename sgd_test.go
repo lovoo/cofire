@@ -8,7 +8,7 @@ import (
 func TestGradientDescent(t *testing.T) {
 	user := makeFeatures([]float64{0.5, 0.5, 0.5})
 	product := makeFeatures([]float64{0.1, 0.1, 0.1})
-	sgd := SGD{Gamma: DefaultParams().Gamma, Lambda: DefaultParams().Lambda}
+	sgd := NewSGD(DefaultParams())
 
 	cuser := user.clone()
 	sgd.Apply(cuser, product, -1)
@@ -26,12 +26,13 @@ func TestGradientDescent(t *testing.T) {
 func TestSGD_Clip0(t *testing.T) {
 	u := &Features{V: []float64{0.5, 0.5, 0.5}}
 	p := &Features{V: []float64{0.1, 0.1, 0.1}}
-	sgd := SGD{Gamma: 1e33, Lambda: DefaultParams().Lambda, Clip: 0}
+	params := DefaultParams()
+	params.Gamma = 1e33
+	sgd := NewSGD(params)
 
 	var v float64
 	for i := 0; i < 11; i++ {
 		sgd.Apply(u, p, -1)
-
 		v = u.Predict(p, 0)
 	}
 	if !math.IsNaN(v) {
@@ -42,7 +43,10 @@ func TestSGD_Clip0(t *testing.T) {
 func TestSGD_ClipNot0(t *testing.T) {
 	u := &Features{V: []float64{0.5, 0.5, 0.5}}
 	p := &Features{V: []float64{0.1, 0.1, 0.1}}
-	sgd := SGD{Gamma: 1e33, Lambda: DefaultParams().Lambda, Clip: 0.1}
+	params := DefaultParams()
+	params.Gamma = 1e33
+	params.Clip = 0.2
+	sgd := NewSGD(params)
 
 	var v float64
 	for i := 0; i < 11; i++ {

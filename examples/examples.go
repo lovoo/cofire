@@ -111,7 +111,7 @@ func StartValidator(ctx context.Context, view *goka.View, ratings []cofire.Ratin
 				v   = cofire.NewErrorValidator()
 				u   *cofire.Features
 				p   *cofire.Features
-				sgd = cofire.NewSGD(params.Gamma, params.Lambda)
+				sgd = cofire.NewSGD(params)
 			)
 
 			for _, r := range ratings {

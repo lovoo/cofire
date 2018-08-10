@@ -64,5 +64,5 @@ func (s *SGD) ApplyError(f, o *Features, e float64) {
 func (s *SGD) Apply(f, o *Features, score float64) {
 	s.Add(score)
 	e := s.Error(f, o, score)
-	s.Apply(f, o, e)
+	s.ApplyError(f, o, e)
 }
